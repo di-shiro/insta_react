@@ -10,7 +10,7 @@
 }
 .auth_signUp {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* 中央寄せ？ */
 }
 .auth_headerImage {
   object-fit: contain;
