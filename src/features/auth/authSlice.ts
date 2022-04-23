@@ -12,6 +12,7 @@ const apiUrl = process.env.REACT_APP_DEV_API_URL;
 /*
 以下のfetchAsyncLoginがコンポーネント側から呼び出された際、{email, password}を引数として渡す。
 これが引数authen に入ってくる。PROPS_AUTHEN型 は、別途types.ts ファイルに定義されている。
+この関数の返り値 return res.data には、Tokenデータ が格納されている。
  */
 export const fetchAsyncLogin = createAsyncThunk(
   "auth/post",
@@ -41,6 +42,7 @@ export const fetchAsyncRegister = createAsyncThunk(
 このアプリの仕様では、最初に作るProfile情報には、nickNameだけを登録して、画像データはnullで作られる。
 また、Django側でProfileのアクセスを受けるViewsは、JWT認証していないとアクセスできないので、
 headersに JWT Token を含めてDjango側のProfileViewsにアクセスする。
+この関数の戻り値 return res.data は、Django側で作成したProfileデータとなる。
  */
 export const fetchAsyncCreateProf = createAsyncThunk(
   "profile/post",
@@ -161,6 +163,42 @@ export const authSlice = createSlice({
       state.myprofile.nickName = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    /*
+    createAsyncThunkで作成した非同期関数のreturn値 は、
+    下の action.payload に入ってくる。
+    JWTの場合は２つの属性 access と refresh がある。
+     */
+    builder.addCase(fetchAsyncLogin.fulfilled, (state, action) => {
+      localStorage.setItem("localJWT", action.payload.access);
+    });
+    /* initialStateで定義した myprofile にDjango側で作成して、
+    response で帰ってきた Profileデータ を格納する。 */
+    builder.addCase(fetchAsyncCreateProf.fulfilled, (state, action) => {
+      state.myprofile = action.payload;
+    });
+    builder.addCase(fetchAsyncGetMyProf.fulfilled, (state, action) => {
+      state.myprofile = action.payload;
+    });
+    /*
+    Django-APIから取得した全UserのProfileを配列としてStateに保持する。
+    initialSate を参照。 */
+    builder.addCase(fetchAsyncGetProfs.fulfilled, (state, action) => {
+      state.profiles = action.payload;
+    });
+    /*
+    ここでは、State内のProfileを、Djangoから帰ってきた「更新後Profileデータ」で置き換えている。
+    まず、非同期関数でDjango-APIに対してPUTメソッドでアクセスして更新処理を実行させる。
+    その後、Django側で更新処理完了した後、返り値として 更新されたProfile が帰ってくる。
+    これが、action.payload に入っているので、ReactのStateを、この新Profileで置き換える。
+     */
+    builder.addCase(fetchAsyncUpdateProf.fulfilled, (state, action) => {
+      state.myprofile = action.payload;
+      state.profiles = state.profiles.map((prof) =>
+        prof.id === action.payload.id ? action.payload : prof
+      );
+    });
+  },
 });
 
 export const {
@@ -174,5 +212,23 @@ export const {
   resetOpenProfile,
   editNickname,
 } = authSlice.actions;
+
+/*
+select関数は、単純に Stateの中にある 値を取り出すだけ。
+ここでは、単にisLoadingAuth の値を返している。
+ちなみに、state.auth の auth は、store.ts の中で authReducer を他のReducerと統合する
+configureStoreで設定したオブジェクト名と同じでなければならない。
+
+RootStateとは、全部のslice のStateを一纏めにしたもの。
+全てのStateのデータ型を持っている。
+ */
+export const selectIsLoadingAuth = (state: RootState) =>
+  state.auth.isLoadingAuth;
+
+export const selectOpenSignIn = (state: RootState) => state.auth.openSignIn;
+export const selectOpenSignUp = (state: RootState) => state.auth.openSignUp;
+export const selectOpenProfile = (state: RootState) => state.auth.openProfile;
+export const selectProfile = (state: RootState) => state.auth.myprofile;
+export const selectProfiles = (state: RootState) => state.auth.profiles;
 
 export default authSlice.reducer;
