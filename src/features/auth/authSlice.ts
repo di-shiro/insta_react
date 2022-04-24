@@ -17,7 +17,7 @@ const apiUrl = process.env.REACT_APP_DEV_API_URL;
 export const fetchAsyncLogin = createAsyncThunk(
   "auth/post",
   async (authen: PROPS_AUTHEN) => {
-    const res = await axios.post(`${apiUrl}authen/jwt/create`, authen, {
+    const res = await axios.post(`${apiUrl}authen/jwt/create/`, authen, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -106,7 +106,7 @@ export const fetchAsyncGetProfs = createAsyncThunk("profiles/get", async () => {
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
-    openSignIn: true, // SignIn編集用のモーダルダイアログの表示・非表示を制御するState
+    openSignIn: true, // SignIn編集用のモーダルダイアログの表示・非表示を制御するState。デフォルトtrueにすることで、アクセス時自動で表示する。
     openSignUp: false, // SignUp編集用の
     openProfile: false, // Profile編集用の
     isLoadingAuth: false,
