@@ -151,71 +151,56 @@ export const postSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    /*
-    createAsyncThunkで作成した非同期関数のreturn値 は、
-    下の action.payload に入ってくる。
-    JWTの場合は２つの属性 access と refresh がある。
-     */
-    builder.addCase(fetchAsyncLogin.fulfilled, (state, action) => {
-      localStorage.setItem("localJWT", action.payload.access);
+    builder.addCase(fetchAsyncGetPosts.fulfilled, (state, action) => {
+      return {
+        ...state,
+        posts: action.payload,
+      };
     });
-    /* initialStateで定義した myprofile にDjango側で作成して、
-    response で帰ってきた Profileデータ を格納する。 */
-    builder.addCase(fetchAsyncCreateProf.fulfilled, (state, action) => {
-      state.myprofile = action.payload;
+    builder.addCase(fetchAsyncNewPost.fulfilled, (state, action) => {
+      return {
+        ...state,
+        posts: [...state.posts, action.payload],
+      };
     });
-    builder.addCase(fetchAsyncGetMyProf.fulfilled, (state, action) => {
-      state.myprofile = action.payload;
+    builder.addCase(fetchAsyncGetComments.fulfilled, (state, action) => {
+      return {
+        ...state,
+        comments: action.payload,
+      };
     });
-    /*
-    Django-APIから取得した全UserのProfileを配列としてStateに保持する。
-    initialSate を参照。 */
-    builder.addCase(fetchAsyncGetProfs.fulfilled, (state, action) => {
-      state.profiles = action.payload;
+    builder.addCase(fetchAsyncPostComment.fulfilled, (state, action) => {
+      return {
+        ...state,
+        comments: [...state.comments, action.payload],
+      };
     });
-    /*
-    ここでは、State内のProfileを、Djangoから帰ってきた「更新後Profileデータ」で置き換えている。
-    まず、非同期関数でDjango-APIに対してPUTメソッドでアクセスして更新処理を実行させる。
-    その後、Django側で更新処理完了した後、返り値として 更新されたProfile が帰ってくる。
-    これが、action.payload に入っているので、ReactのStateを、この新Profileで置き換える。
-     */
-    builder.addCase(fetchAsyncUpdateProf.fulfilled, (state, action) => {
-      state.myprofile = action.payload;
-      state.profiles = state.profiles.map((prof) =>
-        prof.id === action.payload.id ? action.payload : prof
-      );
+    builder.addCase(fetchAsyncPatchLiked.fulfilled, (state, action) => {
+      return {
+        ...state,
+        posts: state.posts.map((post) =>
+          post.id === action.payload.id ? action.payload : post
+        ),
+      };
     });
   },
 });
 
 export const {
-  fetchCredStart,
-  fetchCredEnd,
-  setOpenSignIn,
-  resetOpenSignIn,
-  setOpenSignUp,
-  resetOpenSignUp,
-  setOpenProfile,
-  resetOpenProfile,
-  editNickname,
-} = authSlice.actions;
+  fetchPostStart,
+  fetchPostEnd,
+  setOpenNewPost,
+  resetOpenNewPost,
+} = postSlice.actions;
 
 /*
-select関数は、単純に Stateの中にある 値を取り出すだけ。
-ここでは、単にisLoadingAuth の値を返している。
-ちなみに、state.auth の auth は、store.ts の中で authReducer を他のReducerと統合する
-configureStoreで設定したオブジェクト名と同じでなければならない。
-
 RootStateとは、全部のslice のStateを一纏めにしたもの。
 全てのStateのデータ型を持っている。
  */
-export const selectIsLoadingAuth = (state: RootState) =>
-  state.auth.isLoadingAuth;
+export const selectIsLoadingPost = (state: RootState) =>
+  state.post.isLoadingPost;
+export const selectOpenNewPost = (state: RootState) => state.post.openNewPost;
+export const selectPosts = (state: RootState) => state.post.posts;
+export const selectComments = (state: RootState) => state.post.comments;
 
-export const selectOpenSignIn = (state: RootState) => state.auth.openSignIn;
-export const selectOpenSignUp = (state: RootState) => state.auth.openSignUp;
-export const selectOpenProfile = (state: RootState) => state.auth.openProfile;
-export const selectProfile = (state: RootState) => state.auth.myprofile;
-export const selectProfiles = (state: RootState) => state.auth.profiles;
-
-export default authSlice.reducer;
+export default postSlice.reducer;
