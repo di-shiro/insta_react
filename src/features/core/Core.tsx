@@ -5,7 +5,7 @@ import styles from "./Core.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
 
-import { withStyles, styled } from "@material-ui/core/styles";
+import { withStyles } from "@material-ui/core/styles";
 import {
   Button,
   Grid,
@@ -40,6 +40,7 @@ import {
 } from "../post/postSlice";
 
 import Post from "../post/Post";
+import EditProfile from "./EditProfile";
 
 /* Material-uiのサイトからコピーした。
 https://mui.com/material-ui/react-avatar/#with-badge
@@ -101,6 +102,7 @@ const Core: React.FC = () => {
   return (
     <div>
       <Auth />
+      <EditProfile />
 
       <div className={styles.core_header}>
         <h1 className={styles.core_title}>SNS clone</h1>
@@ -147,7 +149,7 @@ const Core: React.FC = () => {
                     }}
                     variant="dot"
                   >
-                    <Avatar alt="" src="/static/images/avatar/1.jpg" />
+                    <Avatar alt="who?" src={profile.img} />{" "}
                   </StyledBadge>
                 </button>
               </div>
