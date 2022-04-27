@@ -39,6 +39,8 @@ import {
   fetchAsyncGetComments,
 } from "../post/postSlice";
 
+import Post from "../post/Post";
+
 /* Material-uiのサイトからコピーした。
 https://mui.com/material-ui/react-avatar/#with-badge
  */
@@ -145,10 +147,7 @@ const Core: React.FC = () => {
                     }}
                     variant="dot"
                   >
-                    <Avatar
-                      alt="Remy Sharp"
-                      src="/static/images/avatar/1.jpg"
-                    />
+                    <Avatar alt="" src="/static/images/avatar/1.jpg" />
                   </StyledBadge>
                 </button>
               </div>
